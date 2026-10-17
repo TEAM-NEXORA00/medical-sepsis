@@ -23,35 +23,71 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom High-Aesthetic Clinical CSS (Dark Modern Clinical Dashboard)
+# Custom High-Aesthetic Clinical CSS (Light Clinical Dashboard - White Background #ffffff & Light Blue Buttons)
 st.markdown("""
 <style>
     /* Global Base */
     .stApp {
-        background-color: #0b1120;
-        color: #e2e8f0;
+        background-color: #ffffff !important;
+        color: #0f172a;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    /* All Streamlit Buttons Styled to Light Blue */
+    .stButton > button, div.stButton > button:first-child, .stDownloadButton > button {
+        background-color: #38bdf8 !important;
+        color: #0c4a6e !important;
+        border: 1px solid #7dd3fc !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 2px 6px rgba(56, 189, 248, 0.25) !important;
+    }
+    .stButton > button:hover, div.stButton > button:first-child:hover, .stDownloadButton > button:hover {
+        background-color: #0ea5e9 !important;
+        color: #ffffff !important;
+        border-color: #0284c7 !important;
+        box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35) !important;
+        transform: translateY(-1px) !important;
+    }
+    .stButton > button:active, div.stButton > button:first-child:active, .stDownloadButton > button:active {
+        background-color: #0284c7 !important;
+        color: #ffffff !important;
+        transform: translateY(0px) !important;
+    }
+    .stButton > button:disabled, div.stButton > button:first-child:disabled {
+        background-color: #e0f2fe !important;
+        color: #0369a1 !important;
+        border-color: #bae6fd !important;
+        opacity: 0.8 !important;
+        box-shadow: none !important;
+    }
+
+    /* Sidebar Light Theme */
+    [data-testid="stSidebar"] {
+        background-color: #f8fafc !important;
+        border-right: 1px solid #e2e8f0 !important;
     }
 
     /* Top Command Header */
     .top-header {
-        background: linear-gradient(135deg, #111e38 0%, #0d1629 100%);
-        border: 1px solid rgba(59, 130, 246, 0.25);
+        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+        border: 1px solid #cbd5e1;
         border-radius: 14px;
         padding: 18px 24px;
         margin-bottom: 22px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     }
     .top-header h1 {
         margin: 0;
         font-size: 1.7rem;
         font-weight: 700;
-        color: #ffffff;
+        color: #0f172a;
         letter-spacing: -0.5px;
     }
     .top-header p {
         margin: 5px 0 0 0;
-        color: #94a3b8;
+        color: #475569;
         font-size: 0.9rem;
     }
 
@@ -61,46 +97,50 @@ st.markdown("""
         padding: 14px 16px;
         margin-bottom: 12px;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         min-height: 195px;
+        color: #0f172a;
     }
     .bed-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
     }
     
     /* Dynamic Color Tiers */
     .tier-low {
-        background: linear-gradient(145deg, #0d231d 0%, #0a1b16 100%);
-        border: 1px solid rgba(16, 185, 129, 0.35);
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #14532d;
     }
     .tier-low.active-bed {
         border: 2px solid #10b981;
-        box-shadow: 0 0 18px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
     }
     
     .tier-moderate {
-        background: linear-gradient(145deg, #2b210a 0%, #1c1505 100%);
-        border: 1px solid rgba(245, 158, 11, 0.4);
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #78350f;
     }
     .tier-moderate.active-bed {
         border: 2px solid #f59e0b;
-        box-shadow: 0 0 18px rgba(245, 158, 11, 0.45);
+        box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
     }
     
     .tier-high {
-        background: linear-gradient(145deg, #2e1017 0%, #1d090e 100%);
-        border: 1px solid rgba(239, 68, 68, 0.5);
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #7f1d1d;
         animation: pulse-danger 2.2s infinite;
     }
     .tier-high.active-bed {
         border: 2px solid #ef4444;
-        box-shadow: 0 0 22px rgba(239, 68, 68, 0.6);
+        box-shadow: 0 0 18px rgba(239, 68, 68, 0.35);
     }
 
     @keyframes pulse-danger {
-        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45); }
-        70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.35); }
+        70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
         100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
 
@@ -114,41 +154,48 @@ st.markdown("""
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    .badge-green { background-color: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
-    .badge-amber { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.45); }
-    .badge-red { background-color: rgba(239, 68, 68, 0.22); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.5); }
-    .badge-blue { background-color: rgba(59, 130, 246, 0.18); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
-    .badge-purple { background-color: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .badge-green { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .badge-amber { background-color: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+    .badge-red { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .badge-blue { background-color: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+    .badge-purple { background-color: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; }
 
     /* XAI Driver Cards */
     .xai-card {
-        background: #141f36;
-        border-left: 4px solid #3b82f6;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #0284c7;
         border-radius: 8px;
         padding: 10px 14px;
         margin-bottom: 10px;
+        color: #0f172a;
     }
     .xai-card.critical {
+        border-color: #fecaca;
         border-left-color: #ef4444;
-        background: rgba(239, 68, 68, 0.12);
+        background: #fef2f2;
+        color: #991b1b;
     }
     .xai-card.warning {
+        border-color: #fde68a;
         border-left-color: #f59e0b;
-        background: rgba(245, 158, 11, 0.12);
+        background: #fffbeb;
+        color: #92400e;
     }
 
     /* SBAR Clinical Card */
     .sbar-box {
-        background: #111e38;
-        border: 1px solid rgba(59, 130, 246, 0.3);
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
         border-radius: 10px;
         padding: 16px;
         font-family: inherit;
+        color: #0f172a;
     }
     .sbar-section {
         margin-bottom: 12px;
         padding-bottom: 10px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     }
     .sbar-section:last-child {
         border-bottom: none;
@@ -157,7 +204,7 @@ st.markdown("""
     }
     .sbar-label {
         font-weight: 700;
-        color: #38bdf8;
+        color: #0284c7;
         font-size: 0.82rem;
         text-transform: uppercase;
         letter-spacing: 0.8px;
@@ -168,6 +215,7 @@ st.markdown("""
     .tele-val {
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         font-weight: 600;
+        color: #0f172a;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -688,22 +736,22 @@ for i, bed_id in enumerate(range(1, 9)):
         st.markdown(f"""
         <div class="bed-card {card_class} {selected_class}">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <span style="font-weight: 700; color: #ffffff; font-size: 0.95rem;">{row_data['bed_str']}</span>
+                <span style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">{row_data['bed_str']}</span>
                 {tier_badge}
             </div>
-            <div style="font-size: 0.85rem; color: #cbd5e1; font-weight: 600;">{row_data['name']} ({row_data['age']}{row_data['sex']})</div>
-            <div style="font-size: 0.74rem; color: #94a3b8; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;">{row_data['name']} ({row_data['age']}{row_data['sex']})</div>
+            <div style="font-size: 0.74rem; color: #64748b; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 {row_data['dx']}
             </div>
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
-                <span style="font-size: 0.78rem; color: #94a3b8;">Risk Score:</span>
+                <span style="font-size: 0.78rem; color: #64748b;">Risk Score:</span>
                 <span style="font-size: 1.3rem; font-weight: 800; color: {accent_color};">{risk:.0f}%</span>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 6px 8px; border-radius: 6px;">
-                <div>HR: <b class="tele-val" style="color: {'#f87171' if row_data['hr'] > 100 else '#e2e8f0'};">{row_data['hr']:.0f}</b></div>
-                <div>BP: <b class="tele-val">{row_data['sbp']:.0f}/{row_data['dbp']:.0f}</b></div>
-                <div>SpO2: <b class="tele-val" style="color: {'#f87171' if row_data['spo2'] < 93 else '#e2e8f0'};">{row_data['spo2']:.0f}%</b></div>
-                <div>SI: <b class="tele-val" style="color: {'#f87171' if row_data['shock_index'] > 0.9 else '#34d399'};">{row_data['shock_index']:.2f}</b></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.75rem; background: rgba(255,255,255,0.75); border: 1px solid rgba(0,0,0,0.06); padding: 6px 8px; border-radius: 6px;">
+                <div>HR: <b class="tele-val" style="color: {'#dc2626' if row_data['hr'] > 100 else '#0f172a'};">{row_data['hr']:.0f}</b></div>
+                <div>BP: <b class="tele-val" style="color: #0f172a;">{row_data['sbp']:.0f}/{row_data['dbp']:.0f}</b></div>
+                <div>SpO2: <b class="tele-val" style="color: {'#dc2626' if row_data['spo2'] < 93 else '#0f172a'};">{row_data['spo2']:.0f}%</b></div>
+                <div>SI: <b class="tele-val" style="color: {'#dc2626' if row_data['shock_index'] > 0.9 else '#16a34a'};">{row_data['shock_index']:.2f}</b></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -729,14 +777,14 @@ curr_pt_row = df_patient_live.iloc[-1]
 
 # Patient Clinical Header
 st.markdown(f"""
-<div style="background: #111e38; border-left: 5px solid #3b82f6; border-radius: 8px; padding: 14px 20px; margin-bottom: 20px;">
+<div style="background: #f8fafc; border: 1px solid #cbd5e1; border-left: 5px solid #0284c7; border-radius: 8px; padding: 14px 20px; margin-bottom: 20px;">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
         <div>
-            <h3 style="margin: 0; color: #ffffff; font-size: 1.3rem;">
-                📋 Patient Deep-Dive: <span style="color: #60a5fa;">{active_meta['bed_str']} &bull; {active_meta['name']}</span>
-                <span style="font-size: 0.88rem; color: #94a3b8; font-weight: normal; margin-left: 10px;">MRN: {active_meta['patient_id']}</span>
+            <h3 style="margin: 0; color: #0f172a; font-size: 1.3rem;">
+                📋 Patient Deep-Dive: <span style="color: #0284c7;">{active_meta['bed_str']} &bull; {active_meta['name']}</span>
+                <span style="font-size: 0.88rem; color: #64748b; font-weight: normal; margin-left: 10px;">MRN: {active_meta['patient_id']}</span>
             </h3>
-            <div style="font-size: 0.85rem; color: #cbd5e1; margin-top: 4px;">
+            <div style="font-size: 0.85rem; color: #334155; margin-top: 4px;">
                 <b>Age/Sex:</b> {active_meta['age']} {active_meta['sex']} &bull; 
                 <b>Diagnosis:</b> {active_meta['dx']} &bull; 
                 <b>Attending:</b> {active_meta['md']} &bull; 
@@ -834,19 +882,19 @@ with col_charts:
         fig_hemo.update_layout(
             title="<b>Hemodynamic Trajectory & Shock Index (SI)</b>",
             title_font_size=13,
-            paper_bgcolor="#111a2e",
-            plot_bgcolor="#0c1322",
-            font=dict(color="#94a3b8", size=11),
+            paper_bgcolor="#ffffff",
+            plot_bgcolor="#f8fafc",
+            font=dict(color="#334155", size=11),
             xaxis=dict(
                 title="Simulation Timeline (Hours)",
-                gridcolor="rgba(255,255,255,0.06)",
+                gridcolor="rgba(0,0,0,0.07)",
                 tickmode="linear",
                 dtick=2,
                 range=[1, 24]
             ),
             yaxis=dict(
                 title="HR / MAP",
-                gridcolor="rgba(255,255,255,0.06)",
+                gridcolor="rgba(0,0,0,0.07)",
                 range=[45, 145]
             ),
             yaxis2=dict(
@@ -912,19 +960,19 @@ with col_charts:
         fig_resp.update_layout(
             title="<b>Oxygen Saturation (SpO2) & Respiratory Dynamics</b>",
             title_font_size=13,
-            paper_bgcolor="#111a2e",
-            plot_bgcolor="#0c1322",
-            font=dict(color="#94a3b8", size=11),
+            paper_bgcolor="#ffffff",
+            plot_bgcolor="#f8fafc",
+            font=dict(color="#334155", size=11),
             xaxis=dict(
                 title="Simulation Timeline (Hours)",
-                gridcolor="rgba(255,255,255,0.06)",
+                gridcolor="rgba(0,0,0,0.07)",
                 tickmode="linear",
                 dtick=2,
                 range=[1, 24]
             ),
             yaxis=dict(
                 title="SpO2 (%)",
-                gridcolor="rgba(255,255,255,0.06)",
+                gridcolor="rgba(0,0,0,0.07)",
                 range=[85, 101]
             ),
             yaxis2=dict(
@@ -981,19 +1029,19 @@ with col_charts:
         fig_labs.update_layout(
             title="<b>Lab Surveillance: Serum Lactate & WBC Progression</b>",
             title_font_size=13,
-            paper_bgcolor="#111a2e",
-            plot_bgcolor="#0c1322",
-            font=dict(color="#94a3b8", size=11),
+            paper_bgcolor="#ffffff",
+            plot_bgcolor="#f8fafc",
+            font=dict(color="#334155", size=11),
             xaxis=dict(
                 title="Simulation Timeline (Hours)",
-                gridcolor="rgba(255,255,255,0.06)",
+                gridcolor="rgba(0,0,0,0.07)",
                 tickmode="linear",
                 dtick=2,
                 range=[1, 24]
             ),
             yaxis=dict(
                 title="Lactate (mmol/L)",
-                gridcolor="rgba(255,255,255,0.06)",
+                gridcolor="rgba(0,0,0,0.07)",
                 range=[0.5, 4.8]
             ),
             yaxis2=dict(
@@ -1078,11 +1126,11 @@ with col_charts:
             fig_counter.update_layout(
                 title="<b>Clinical Risk Trajectory: Natural Deterioration vs Early Resuscitation</b>",
                 title_font_size=13,
-                paper_bgcolor="#111a2e",
-                plot_bgcolor="#0c1322",
-                font=dict(color="#94a3b8", size=11),
-                xaxis=dict(title="Simulation Timeline (Hours)", gridcolor="rgba(255,255,255,0.06)", range=[1, 24]),
-                yaxis=dict(title="Composite Sepsis Risk (%)", gridcolor="rgba(255,255,255,0.06)", range=[0, 105]),
+                paper_bgcolor="#ffffff",
+                plot_bgcolor="#f8fafc",
+                font=dict(color="#334155", size=11),
+                xaxis=dict(title="Simulation Timeline (Hours)", gridcolor="rgba(0,0,0,0.07)", range=[1, 24]),
+                yaxis=dict(title="Composite Sepsis Risk (%)", gridcolor="rgba(0,0,0,0.07)", range=[0, 105]),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=10)),
                 margin=dict(l=45, r=45, t=40, b=35),
                 height=320
@@ -1115,19 +1163,19 @@ with col_charts:
         <div class="sbar-box">
             <div class="sbar-section">
                 <div class="sbar-label">S &bull; Situation</div>
-                <div style="font-size: 0.88rem; color: #e2e8f0;">{sbar_s}</div>
+                <div style="font-size: 0.88rem; color: #0f172a;">{sbar_s}</div>
             </div>
             <div class="sbar-section">
                 <div class="sbar-label">B &bull; Background</div>
-                <div style="font-size: 0.88rem; color: #cbd5e1;">{sbar_b}</div>
+                <div style="font-size: 0.88rem; color: #334155;">{sbar_b}</div>
             </div>
             <div class="sbar-section">
                 <div class="sbar-label">A &bull; Assessment</div>
-                <div style="font-size: 0.88rem; color: #e2e8f0;">{sbar_a}</div>
+                <div style="font-size: 0.88rem; color: #0f172a;">{sbar_a}</div>
             </div>
             <div class="sbar-section">
                 <div class="sbar-label">R &bull; Recommendation</div>
-                <div style="font-size: 0.88rem; color: #facc15;">{sbar_r}</div>
+                <div style="font-size: 0.88rem; color: #b45309; font-weight: 600;">{sbar_r}</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -1176,26 +1224,26 @@ with col_ai:
     fig_gauge = go.Figure(go.Indicator(
         mode="gauge+number+delta",
         value=current_risk,
-        number={"suffix": "%", "font": {"size": 38, "color": "#ffffff"}},
+        number={"suffix": "%", "font": {"size": 38, "color": "#0f172a"}},
         delta={
             "reference": ref_risk,
-            "increasing": {"color": "#ef4444"},
-            "decreasing": {"color": "#10b981"},
+            "increasing": {"color": "#dc2626"},
+            "decreasing": {"color": "#16a34a"},
             "suffix": "% (3h Δ)"
         },
         gauge={
-            "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": "#94a3b8"},
-            "bar": {"color": "#ef4444" if current_risk > 65 else ("#f59e0b" if current_risk >= 30 else "#10b981")},
-            "bgcolor": "#1e293b",
+            "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": "#64748b"},
+            "bar": {"color": "#dc2626" if current_risk > 65 else ("#d97706" if current_risk >= 30 else "#16a34a")},
+            "bgcolor": "#f1f5f9",
             "borderwidth": 1,
-            "bordercolor": "rgba(255,255,255,0.1)",
+            "bordercolor": "rgba(0,0,0,0.1)",
             "steps": [
-                {"range": [0, 30], "color": "rgba(16, 185, 129, 0.22)"},
-                {"range": [30, 65], "color": "rgba(245, 158, 11, 0.22)"},
-                {"range": [65, 100], "color": "rgba(239, 68, 68, 0.28)"}
+                {"range": [0, 30], "color": "rgba(16, 185, 129, 0.2)"},
+                {"range": [30, 65], "color": "rgba(245, 158, 11, 0.2)"},
+                {"range": [65, 100], "color": "rgba(239, 68, 68, 0.25)"}
             ],
             "threshold": {
-                "line": {"color": "#ffffff", "width": 3},
+                "line": {"color": "#0f172a", "width": 3},
                 "thickness": 0.85,
                 "value": current_risk
             }
@@ -1203,9 +1251,9 @@ with col_ai:
     ))
     
     fig_gauge.update_layout(
-        paper_bgcolor="#111a2e",
-        plot_bgcolor="#111a2e",
-        font=dict(color="#e2e8f0"),
+        paper_bgcolor="#ffffff",
+        plot_bgcolor="#ffffff",
+        font=dict(color="#0f172a"),
         margin=dict(l=20, r=20, t=30, b=10),
         height=190
     )
@@ -1253,8 +1301,8 @@ with col_ai:
             st.markdown(f"""
             <div class="xai-card {driver_class}">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: 600; font-size: 0.86rem; color: #ffffff;">{factor_name}</span>
-                    <span style="font-weight: 700; font-size: 0.86rem; color: {'#f87171' if points > 14 else '#fbbf24'};">+{points}% contribution</span>
+                    <span style="font-weight: 600; font-size: 0.86rem; color: #0f172a;">{factor_name}</span>
+                    <span style="font-weight: 700; font-size: 0.86rem; color: {'#dc2626' if points > 14 else '#d97706'};">+{points}% contribution</span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -1269,8 +1317,8 @@ with col_ai:
             orientation="h",
             marker=dict(
                 color=xai_values,
-                colorscale=[[0, "#3b82f6"], [0.45, "#f59e0b"], [1.0, "#ef4444"]],
-                line=dict(color="rgba(255,255,255,0.15)", width=1)
+                colorscale=[[0, "#38bdf8"], [0.45, "#f59e0b"], [1.0, "#ef4444"]],
+                line=dict(color="rgba(0,0,0,0.1)", width=1)
             ),
             text=[f"+{v}%" for v in xai_values],
             textposition="auto"
@@ -1279,10 +1327,10 @@ with col_ai:
         fig_xai.update_layout(
             title="<b>Multivariate Weight Distribution</b>",
             title_font_size=12,
-            paper_bgcolor="#111a2e",
-            plot_bgcolor="#0c1322",
-            font=dict(color="#cbd5e1", size=10),
-            xaxis=dict(title="Calculated Risk Impact (%)", gridcolor="rgba(255,255,255,0.06)", range=[0, 35]),
+            paper_bgcolor="#ffffff",
+            plot_bgcolor="#f8fafc",
+            font=dict(color="#334155", size=10),
+            xaxis=dict(title="Calculated Risk Impact (%)", gridcolor="rgba(0,0,0,0.07)", range=[0, 35]),
             yaxis=dict(autorange="reversed"),
             margin=dict(l=10, r=10, t=30, b=30),
             height=170
