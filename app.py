@@ -883,7 +883,7 @@ with col_charts:
         fig_hemo.add_trace(go.Scatter(
             x=df_patient_live["hour"],
             y=df_patient_live["hr"],
-            name="Heart Rate (HR bpm)",
+            name="HR (bpm)",
             mode="lines+markers",
             line=dict(color="#f43f5e", width=2.5),
             marker=dict(size=5)
@@ -892,7 +892,7 @@ with col_charts:
         fig_hemo.add_trace(go.Scatter(
             x=df_patient_live["hour"],
             y=df_patient_live["map"],
-            name="Mean Arterial Pressure (MAP mmHg)",
+            name="MAP (mmHg)",
             mode="lines+markers",
             line=dict(color="#38bdf8", width=2.5),
             marker=dict(size=5)
@@ -901,7 +901,7 @@ with col_charts:
         fig_hemo.add_trace(go.Scatter(
             x=df_patient_live["hour"],
             y=df_patient_live["shock_index"],
-            name="Shock Index (HR / SBP)",
+            name="Shock Index (SI)",
             mode="lines+markers",
             line=dict(color="#eab308", width=2.5, dash="dot"),
             marker=dict(size=5),
@@ -990,7 +990,7 @@ with col_charts:
             plot_bgcolor="#f8fafc",
             font=dict(color="#334155", size=11),
             xaxis=dict(
-                title="Simulation Timeline (Hours)",
+                title=dict(text="Simulation Timeline (Hours)", standoff=12),
                 gridcolor="rgba(0,0,0,0.07)",
                 tickmode="linear",
                 dtick=2,
@@ -1011,13 +1011,16 @@ with col_charts:
             legend=dict(
                 orientation="h",
                 yanchor="top",
-                y=-0.22,
+                y=-0.32,
                 xanchor="center",
                 x=0.5,
-                font=dict(size=10)
+                font=dict(size=11),
+                bgcolor="rgba(255, 255, 255, 0.85)",
+                bordercolor="rgba(0, 0, 0, 0.08)",
+                borderwidth=1
             ),
-            margin=dict(l=45, r=45, t=35, b=55),
-            height=275
+            margin=dict(l=45, r=45, t=35, b=95),
+            height=320
         )
         render_plotly(fig_hemo)
 
@@ -1036,7 +1039,7 @@ with col_charts:
         fig_resp.add_trace(go.Scatter(
             x=df_patient_live["hour"],
             y=df_patient_live["rr"],
-            name="Respiratory Rate (bpm)",
+            name="Resp Rate (bpm)",
             mode="lines+markers",
             line=dict(color="#a855f7", width=2.5),
             marker=dict(size=5),
@@ -1070,7 +1073,7 @@ with col_charts:
             line_dash="solid",
             line_width=2,
             line_color="#0284c7",
-            annotation_text=f"T+{st.session_state.sim_hour:02d}:00",
+            annotation_text=f"Live: T+{st.session_state.sim_hour:02d}:00",
             annotation_position="top left",
             annotation_font_color="#0284c7"
         )
@@ -1101,7 +1104,7 @@ with col_charts:
             plot_bgcolor="#f8fafc",
             font=dict(color="#334155", size=11),
             xaxis=dict(
-                title="Simulation Timeline (Hours)",
+                title=dict(text="Simulation Timeline (Hours)", standoff=12),
                 gridcolor="rgba(0,0,0,0.07)",
                 tickmode="linear",
                 dtick=2,
@@ -1122,13 +1125,16 @@ with col_charts:
             legend=dict(
                 orientation="h",
                 yanchor="top",
-                y=-0.22,
+                y=-0.32,
                 xanchor="center",
                 x=0.5,
-                font=dict(size=10)
+                font=dict(size=11),
+                bgcolor="rgba(255, 255, 255, 0.85)",
+                bordercolor="rgba(0, 0, 0, 0.08)",
+                borderwidth=1
             ),
-            margin=dict(l=45, r=45, t=35, b=55),
-            height=265
+            margin=dict(l=45, r=45, t=35, b=95),
+            height=320
         )
         render_plotly(fig_resp)
 
@@ -1138,7 +1144,7 @@ with col_charts:
         fig_labs.add_trace(go.Scatter(
             x=df_patient_live["hour"],
             y=df_patient_live["lactate"],
-            name="Serum Lactate (mmol/L)",
+            name="Lactate (mmol/L)",
             mode="lines+markers",
             line=dict(color="#fb923c", width=2.5),
             marker=dict(size=5)
@@ -1181,7 +1187,7 @@ with col_charts:
             line_dash="solid",
             line_width=2,
             line_color="#0284c7",
-            annotation_text=f"T+{st.session_state.sim_hour:02d}:00",
+            annotation_text=f"Live: T+{st.session_state.sim_hour:02d}:00",
             annotation_position="top left",
             annotation_font_color="#0284c7"
         )
@@ -1203,7 +1209,7 @@ with col_charts:
             plot_bgcolor="#f8fafc",
             font=dict(color="#334155", size=11),
             xaxis=dict(
-                title="Simulation Timeline (Hours)",
+                title=dict(text="Simulation Timeline (Hours)", standoff=12),
                 gridcolor="rgba(0,0,0,0.07)",
                 tickmode="linear",
                 dtick=2,
@@ -1224,13 +1230,16 @@ with col_charts:
             legend=dict(
                 orientation="h",
                 yanchor="top",
-                y=-0.22,
+                y=-0.32,
                 xanchor="center",
                 x=0.5,
-                font=dict(size=10)
+                font=dict(size=11),
+                bgcolor="rgba(255, 255, 255, 0.85)",
+                bordercolor="rgba(0, 0, 0, 0.08)",
+                borderwidth=1
             ),
-            margin=dict(l=45, r=45, t=35, b=55),
-            height=265
+            margin=dict(l=45, r=45, t=35, b=95),
+            height=320
         )
         render_plotly(fig_labs)
 
@@ -1301,11 +1310,21 @@ with col_charts:
             paper_bgcolor="#ffffff",
             plot_bgcolor="#f8fafc",
             font=dict(color="#334155", size=11),
-            xaxis=dict(title="Simulation Timeline (Hours)", gridcolor="rgba(0,0,0,0.07)", range=[1, 24]),
+            xaxis=dict(title=dict(text="Simulation Timeline (Hours)", standoff=12), gridcolor="rgba(0,0,0,0.07)", range=[1, 24]),
             yaxis=dict(title="Composite Sepsis Risk (%)", gridcolor="rgba(0,0,0,0.07)", range=[0, 105]),
-            legend=dict(orientation="h", yanchor="top", y=-0.20, xanchor="center", x=0.5, font=dict(size=10)),
-            margin=dict(l=45, r=45, t=35, b=65),
-            height=340
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=-0.30,
+                xanchor="center",
+                x=0.5,
+                font=dict(size=11),
+                bgcolor="rgba(255, 255, 255, 0.85)",
+                bordercolor="rgba(0, 0, 0, 0.08)",
+                borderwidth=1
+            ),
+            margin=dict(l=45, r=45, t=35, b=95),
+            height=380
         )
         render_plotly(fig_counter)
         
@@ -1429,8 +1448,8 @@ with col_ai:
         paper_bgcolor="#ffffff",
         plot_bgcolor="#ffffff",
         font=dict(color="#0f172a"),
-        margin=dict(l=25, r=25, t=20, b=15),
-        height=220
+        margin=dict(l=25, r=25, t=20, b=25),
+        height=230
     )
     render_plotly(fig_gauge)
     
@@ -1506,10 +1525,10 @@ with col_ai:
             paper_bgcolor="#ffffff",
             plot_bgcolor="#f8fafc",
             font=dict(color="#334155", size=10),
-            xaxis=dict(title="Calculated Risk Impact (%)", gridcolor="rgba(0,0,0,0.07)", range=[0, 35]),
+            xaxis=dict(title=dict(text="Calculated Risk Impact (%)", standoff=8), gridcolor="rgba(0,0,0,0.07)", range=[0, 35]),
             yaxis=dict(autorange="reversed"),
-            margin=dict(l=145, r=20, t=35, b=25),
-            height=max(180, len(xai_labels) * 32 + 50)
+            margin=dict(l=150, r=20, t=35, b=50),
+            height=max(190, len(xai_labels) * 32 + 65)
         )
         render_plotly(fig_xai)
     else:
@@ -1533,10 +1552,10 @@ with col_ai:
             paper_bgcolor="#ffffff",
             plot_bgcolor="#f8fafc",
             font=dict(color="#334155", size=10),
-            xaxis=dict(title="Stability Index (%)", gridcolor="rgba(0,0,0,0.07)", range=[0, 105]),
+            xaxis=dict(title=dict(text="Stability Index (%)", standoff=8), gridcolor="rgba(0,0,0,0.07)", range=[0, 105]),
             yaxis=dict(autorange="reversed"),
-            margin=dict(l=145, r=20, t=35, b=25),
-            height=180
+            margin=dict(l=150, r=20, t=35, b=50),
+            height=200
         )
         render_plotly(fig_xai)
 
