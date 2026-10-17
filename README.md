@@ -20,6 +20,37 @@ Open your browser at: **`http://localhost:8501`** (or the port specified in term
 
 ---
 
+## 🌐 Cloud Deployment Guide (Free & 1-Click)
+
+> [!NOTE]
+> **Why Vercel fails:** Vercel is a serverless platform designed for stateless request/response functions (Flask/FastAPI/Next.js). It expects an exported WSGI/ASGI handler in `app.py`. Streamlit is a **stateful application** requiring a continuous WebSocket server (`streamlit run`). Therefore, deploying Streamlit on Vercel triggers `[PYTHON_ENTRYPOINT_NOT_FOUND]`.
+>
+> **The Solution:** Use **Streamlit Community Cloud** (official, 100% free) or **Render** (free persistent web service).
+
+### Option A: Streamlit Community Cloud (Recommended - 2 Minutes)
+1. Go to [share.streamlit.io](https://share.streamlit.io) and log in with your GitHub account.
+2. Click **Create app** / **New app**.
+3. Select your repository: `TEAM-NEXORA00/medical-sepsis`
+4. Set **Branch**: `main` and **Main file path**: `app.py`.
+5. Under **Advanced settings** $\rightarrow$ **Secrets**, paste:
+   ```toml
+   SUPABASE_URL = "https://neeovxcrbsigbnkoimcd.supabase.co"
+   SUPABASE_KEY = "your-supabase-key-here"
+   ```
+6. Click **Deploy!** Your app is live with full interactive charts and real-time state.
+
+### Option B: Render (Web Service)
+1. Go to [Render Dashboard](https://dashboard.render.com/) and click **New +** $\rightarrow$ **Web Service**.
+2. Connect `TEAM-NEXORA00/medical-sepsis`.
+3. Set:
+   - **Environment:** `Python`
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `streamlit run app.py --server.port $PORT --server.address 0.0.0.0`
+4. In **Environment Variables**, add `SUPABASE_URL` and `SUPABASE_KEY`.
+5. Click **Create Web Service**.
+
+---
+
 ## 🎯 Executive Summary & The Clinical Problem
 
 In hospital **non-ICU medical-surgical wards**, patient vitals are measured only intermittently (every 4–6 hours). Deteriorating patients often experience a dangerous phase of **"Silent Sepsis"** and **sub-clinical shock**:
