@@ -591,8 +591,23 @@ if "nurse_checklist" not in st.session_state:
 if "sim_hour" not in st.session_state:
     st.session_state.sim_hour = 14
 
+if "slider_hour" not in st.session_state:
+    st.session_state.slider_hour = 14
+
 if "auto_play" not in st.session_state:
     st.session_state.auto_play = False
+
+def set_hour(h):
+    clamped = int(max(1, min(24, int(h))))
+    st.session_state.sim_hour = clamped
+    st.session_state.slider_hour = clamped
+
+def adjust_hour(delta):
+    current = st.session_state.get("slider_hour", st.session_state.get("sim_hour", 14))
+    set_hour(current + delta)
+
+def on_slider_change():
+    st.session_state.sim_hour = st.session_state.slider_hour
 
 # ----------------- SIDEBAR CONTROLLER -----------------
 with st.sidebar:
@@ -607,37 +622,26 @@ with st.sidebar:
         "Simulation Playback Hour (t = 1 to 24):",
         min_value=1,
         max_value=24,
-        value=st.session_state.sim_hour,
+        value=st.session_state.slider_hour,
         step=1,
         key="slider_hour",
+        on_change=on_slider_change,
         help="Scrub through the 24-hour simulation window. Bed 4 onset starts at t=10 and is flagged at t=13-14 before overt shock."
     )
     st.session_state.sim_hour = sim_hour
 
     # Playback Controls: Step Forward / Backward / Auto-Play
     play_cols = st.columns(3)
-    if play_cols[0].button("⏮ -1h", use_container_width=True):
-        st.session_state.sim_hour = max(1, st.session_state.sim_hour - 1)
-        st.rerun()
-    if play_cols[1].button("Reset", use_container_width=True):
-        st.session_state.sim_hour = 1
-        st.rerun()
-    if play_cols[2].button("+1h ⏭", use_container_width=True):
-        st.session_state.sim_hour = min(24, st.session_state.sim_hour + 1)
-        st.rerun()
+    play_cols[0].button("⏮ -1h", key="btn_prev_hour", on_click=adjust_hour, args=(-1,), use_container_width=True)
+    play_cols[1].button("Reset", key="btn_reset_hour", on_click=set_hour, args=(1,), use_container_width=True)
+    play_cols[2].button("+1h ⏭", key="btn_next_hour", on_click=adjust_hour, args=(1,), use_container_width=True)
 
     # Fast-Jump Presets for Live Demonstrations
     st.markdown("**⚡ Fast-Jump Presets:**")
     preset_cols = st.columns(3)
-    if preset_cols[0].button("T+06", help="Quiet morning baseline (All stable)", use_container_width=True):
-        st.session_state.sim_hour = 6
-        st.rerun()
-    if preset_cols[1].button("T+14 🚨", help="Silent Sepsis Early Warning in Bed 4", use_container_width=True):
-        st.session_state.sim_hour = 14
-        st.rerun()
-    if preset_cols[2].button("T+21 ⚠️", help="Overt Shock / Severe Decompensation", use_container_width=True):
-        st.session_state.sim_hour = 21
-        st.rerun()
+    preset_cols[0].button("T+06", key="btn_preset_t06", help="Quiet morning baseline (All stable)", on_click=set_hour, args=(6,), use_container_width=True)
+    preset_cols[1].button("T+14 🚨", key="btn_preset_t14", help="Silent Sepsis Early Warning in Bed 4", on_click=set_hour, args=(14,), use_container_width=True)
+    preset_cols[2].button("T+21 ⚠️", key="btn_preset_t21", help="Overt Shock / Severe Decompensation", on_click=set_hour, args=(21,), use_container_width=True)
         
     st.markdown(f"**Current Clock:** `T+{st.session_state.sim_hour:02d}:00 / 24:00`")
     st.divider()
@@ -769,9 +773,10 @@ for i, bed_id in enumerate(range(1, 9)):
         </div>
         """, unsafe_allow_html=True)
         
-        btn_text = "🔍 Selected Patient" if is_selected else f"Select {row_data['bed_str']}"
-        if st.button(btn_text, key=f"btn_select_{bed_id}", use_container_width=True, disabled=is_selected):
+        btn_text = f"✓ Viewing {row_data['bed_str']}" if is_selected else f"Select {row_data['bed_str']}"
+        if st.button(btn_text, key=f"btn_select_{bed_id}", use_container_width=True):
             st.session_state.selected_bed = bed_id
+            st.toast(f"Now viewing {row_data['bed_str']} ({row_data['name']})", icon="🩺")
             st.rerun()
 
 st.divider()
@@ -1205,7 +1210,7 @@ with col_charts:
                 use_container_width=True
             )
         with col_sync:
-            if st.button("🏥 Transmit SBAR to Hospital EHR", use_container_width=True):
+            if st.button("🏥 Transmit SBAR to Hospital EHR", key=f"btn_transmit_sbar_{active_bed_id}_{st.session_state.sim_hour}", use_container_width=True):
                 sbar_payload = {
                     "simulation_hour": int(st.session_state.sim_hour),
                     "bed_str": active_meta['bed_str'],
@@ -1217,7 +1222,11 @@ with col_charts:
                     "recommendation": sbar_r
                 }
                 sync_sbar_to_supabase(sbar_payload)
+                st.session_state[f"sbar_sent_{active_bed_id}_{st.session_state.sim_hour}"] = True
+                st.toast(f"✅ SBAR Transmitted for {active_meta['bed_str']} to Hospital EHR!", icon="🏥")
                 st.success("✅ SBAR Report Successfully Transmitted & Logged to Hospital EHR!")
+            elif st.session_state.get(f"sbar_sent_{active_bed_id}_{st.session_state.sim_hour}"):
+                st.caption(f"✓ Transmitted to EHR for T+{st.session_state.sim_hour:02d}:00")
 
 
 # ------------------------------------------------------------------------------
@@ -1408,7 +1417,7 @@ with col_ai:
         completed = sum([c1, c2, c3, c4, c5, c6])
         st.progress(completed / 6.0, text=f"Protocol Completion: {completed}/6 Checklist Items Signed Off")
         
-        if st.button("📝 Log Completed Interventions to EHR Audit Trail", use_container_width=True):
+        if st.button("📝 Log Completed Interventions to EHR Audit Trail", key=f"btn_log_audit_{active_bed_id}_{st.session_state.sim_hour}", use_container_width=True):
             audit_record = {
                 "simulation_hour": int(st.session_state.sim_hour),
                 "bed_id": int(active_bed_id),
@@ -1427,9 +1436,33 @@ with col_ai:
                 "nurse_notes": f"Interventions signed off from WardWatch AI Command Center at T+{st.session_state.sim_hour:02d}:00"
             }
             sync_audit_to_supabase(audit_record)
+            st.toast(f"✅ Interventions Logged to EHR for {active_meta['bed_str']}!", icon="📝")
             st.success(f"✅ EHR Audit Trail Committed: {completed}/6 Interventions Signed Off at T+{st.session_state.sim_hour:02d}:00!")
+            st.rerun()
     else:
         st.success("🟢 Patient physiological parameters within stable recovery limits. Maintain routine standard q4h ward surveillance.")
+        if st.button("📝 Log Routine Surveillance Sign-Off to EHR", key=f"btn_log_routine_{active_bed_id}_{st.session_state.sim_hour}", use_container_width=True):
+            audit_record = {
+                "simulation_hour": int(st.session_state.sim_hour),
+                "bed_id": int(active_bed_id),
+                "bed_str": active_meta['bed_str'],
+                "patient_id": active_meta['patient_id'],
+                "patient_name": active_meta['name'],
+                "risk_score": float(current_risk),
+                "risk_tier": str(curr_pt_row['risk_tier']),
+                "completed_interventions": 0,
+                "stat_lactate": False,
+                "blood_cultures": False,
+                "antibiotics": False,
+                "crystalloid_bolus": False,
+                "rapid_response": False,
+                "telemetry_escalate": False,
+                "nurse_notes": f"Routine surveillance verified & signed off at T+{st.session_state.sim_hour:02d}:00 (All vitals stable)."
+            }
+            sync_audit_to_supabase(audit_record)
+            st.toast(f"✅ Routine Surveillance Logged for {active_meta['bed_str']}!", icon="📋")
+            st.success(f"✅ Routine ward surveillance signed off and recorded in EHR audit repository at T+{st.session_state.sim_hour:02d}:00.")
+            st.rerun()
 
 
 # ==============================================================================
