@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -222,8 +223,48 @@ st.markdown("""
         font-weight: 600;
         color: #0f172a;
     }
+
+    /* Plotly Responsive Container Fixes (Prevent 0-width collapse in tabs) */
+    .stPlotlyChart, div[data-testid="stPlotlyChart"] {
+        width: 100% !important;
+        min-height: 250px;
+    }
+    .stPlotlyChart > div, .js-plotly-plot, .plot-container {
+        width: 100% !important;
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# Client-side tab resize observer to guarantee Plotly always reflows immediately upon tab clicks
+components.html("""
+<script>
+window.addEventListener('load', () => {
+    try {
+        const parentDoc = window.parent.document;
+        const tabButtons = parentDoc.querySelectorAll('button[data-baseweb="tab"]');
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setTimeout(() => {
+                    window.parent.dispatchEvent(new Event('resize'));
+                }, 80);
+            });
+        });
+    } catch (e) {
+        // Sandboxed fallback
+    }
+});
+</script>
+""", height=0)
+
+def render_plotly(fig):
+    """
+    Renders Plotly figures with guaranteed autosizing, responsive stretch, and tab reflow.
+    """
+    fig.update_layout(autosize=True)
+    try:
+        st.plotly_chart(fig, width="stretch", config={"responsive": True, "displayModeBar": False})
+    except (TypeError, Exception):
+        st.plotly_chart(fig, use_container_width=True, config={"responsive": True, "displayModeBar": False})
 
 
 # ==============================================================================
@@ -838,6 +879,7 @@ with col_charts:
         # 1. HEMODYNAMICS & SHOCK INDEX
         fig_hemo = go.Figure()
         
+        # Observed telemetry (solid line with markers)
         fig_hemo.add_trace(go.Scatter(
             x=df_patient_live["hour"],
             y=df_patient_live["hr"],
@@ -866,6 +908,49 @@ with col_charts:
             yaxis="y2"
         ))
         
+        # 24-Hour Projected Trendline (subtle dashed extension)
+        df_patient_future = df_patient_full[df_patient_full["hour"] >= st.session_state.sim_hour]
+        if len(df_patient_future) > 1:
+            fig_hemo.add_trace(go.Scatter(
+                x=df_patient_future["hour"],
+                y=df_patient_future["hr"],
+                name="HR (24h Trend)",
+                mode="lines",
+                line=dict(color="#f43f5e", width=1.5, dash="dot"),
+                opacity=0.45,
+                showlegend=False
+            ))
+            fig_hemo.add_trace(go.Scatter(
+                x=df_patient_future["hour"],
+                y=df_patient_future["map"],
+                name="MAP (24h Trend)",
+                mode="lines",
+                line=dict(color="#38bdf8", width=1.5, dash="dot"),
+                opacity=0.45,
+                showlegend=False
+            ))
+            fig_hemo.add_trace(go.Scatter(
+                x=df_patient_future["hour"],
+                y=df_patient_future["shock_index"],
+                name="SI (24h Trend)",
+                mode="lines",
+                line=dict(color="#eab308", width=1.5, dash="dot"),
+                opacity=0.45,
+                yaxis="y2",
+                showlegend=False
+            ))
+
+        # Current Clock Reference Marker
+        fig_hemo.add_vline(
+            x=st.session_state.sim_hour,
+            line_dash="solid",
+            line_width=2,
+            line_color="#0284c7",
+            annotation_text=f"Live: T+{st.session_state.sim_hour:02d}:00",
+            annotation_position="top left",
+            annotation_font_color="#0284c7"
+        )
+        
         # Critical threshold for Shock Index
         fig_hemo.add_hline(
             y=0.90,
@@ -887,9 +972,9 @@ with col_charts:
         )
         
         # If Bed 4: Annotate the Silent Deterioration window
-        if active_bed_id == 4 and st.session_state.sim_hour >= 10:
+        if active_bed_id == 4:
             fig_hemo.add_vrect(
-                x0=10, x1=min(st.session_state.sim_hour, 15),
+                x0=10, x1=15,
                 fillcolor="#eab308", opacity=0.15,
                 layer="below", line_width=0,
                 annotation_text="⚡ Sub-Clinical Sepsis Window",
@@ -900,6 +985,7 @@ with col_charts:
         fig_hemo.update_layout(
             title="<b>Hemodynamic Trajectory & Shock Index (SI)</b>",
             title_font_size=13,
+            autosize=True,
             paper_bgcolor="#ffffff",
             plot_bgcolor="#f8fafc",
             font=dict(color="#334155", size=11),
@@ -933,7 +1019,7 @@ with col_charts:
             margin=dict(l=45, r=45, t=35, b=55),
             height=275
         )
-        st.plotly_chart(fig_hemo, use_container_width=True)
+        render_plotly(fig_hemo)
 
         # 2. RESPIRATORY & OXYGENATION
         fig_resp = go.Figure()
@@ -957,6 +1043,38 @@ with col_charts:
             yaxis="y2"
         ))
         
+        # 24-Hour Projected Trendline
+        if len(df_patient_future) > 1:
+            fig_resp.add_trace(go.Scatter(
+                x=df_patient_future["hour"],
+                y=df_patient_future["spo2"],
+                name="SpO2 (24h Trend)",
+                mode="lines",
+                line=dict(color="#10b981", width=1.5, dash="dot"),
+                opacity=0.45,
+                showlegend=False
+            ))
+            fig_resp.add_trace(go.Scatter(
+                x=df_patient_future["hour"],
+                y=df_patient_future["rr"],
+                name="RR (24h Trend)",
+                mode="lines",
+                line=dict(color="#a855f7", width=1.5, dash="dot"),
+                opacity=0.45,
+                yaxis="y2",
+                showlegend=False
+            ))
+
+        fig_resp.add_vline(
+            x=st.session_state.sim_hour,
+            line_dash="solid",
+            line_width=2,
+            line_color="#0284c7",
+            annotation_text=f"T+{st.session_state.sim_hour:02d}:00",
+            annotation_position="top left",
+            annotation_font_color="#0284c7"
+        )
+        
         fig_resp.add_hline(
             y=92.0,
             line_dash="dash",
@@ -978,6 +1096,7 @@ with col_charts:
         fig_resp.update_layout(
             title="<b>Oxygen Saturation (SpO2) & Respiratory Dynamics</b>",
             title_font_size=13,
+            autosize=True,
             paper_bgcolor="#ffffff",
             plot_bgcolor="#f8fafc",
             font=dict(color="#334155", size=11),
@@ -1011,7 +1130,7 @@ with col_charts:
             margin=dict(l=45, r=45, t=35, b=55),
             height=265
         )
-        st.plotly_chart(fig_resp, use_container_width=True)
+        render_plotly(fig_resp)
 
         # 3. LAB METRICS (Serum Lactate & WBC)
         fig_labs = go.Figure()
@@ -1035,6 +1154,38 @@ with col_charts:
             yaxis="y2"
         ))
         
+        # 24-Hour Projected Trendline
+        if len(df_patient_future) > 1:
+            fig_labs.add_trace(go.Scatter(
+                x=df_patient_future["hour"],
+                y=df_patient_future["lactate"],
+                name="Lactate (24h Trend)",
+                mode="lines",
+                line=dict(color="#fb923c", width=1.5, dash="dot"),
+                opacity=0.45,
+                showlegend=False
+            ))
+            fig_labs.add_trace(go.Scatter(
+                x=df_patient_future["hour"],
+                y=df_patient_future["wbc"],
+                name="WBC (24h Trend)",
+                mode="lines",
+                line=dict(color="#06b6d4", width=1.5, dash="dot"),
+                opacity=0.45,
+                yaxis="y2",
+                showlegend=False
+            ))
+
+        fig_labs.add_vline(
+            x=st.session_state.sim_hour,
+            line_dash="solid",
+            line_width=2,
+            line_color="#0284c7",
+            annotation_text=f"T+{st.session_state.sim_hour:02d}:00",
+            annotation_position="top left",
+            annotation_font_color="#0284c7"
+        )
+        
         fig_labs.add_hline(
             y=2.0,
             line_dash="dash",
@@ -1047,6 +1198,7 @@ with col_charts:
         fig_labs.update_layout(
             title="<b>Lab Surveillance: Serum Lactate & WBC Progression</b>",
             title_font_size=13,
+            autosize=True,
             paper_bgcolor="#ffffff",
             plot_bgcolor="#f8fafc",
             font=dict(color="#334155", size=11),
@@ -1080,7 +1232,7 @@ with col_charts:
             margin=dict(l=45, r=45, t=35, b=55),
             height=265
         )
-        st.plotly_chart(fig_labs, use_container_width=True)
+        render_plotly(fig_labs)
 
     # --------------------------------------------------------------------------
     # TAB 2: COUNTERFACTUAL WHAT-IF INTERVENTION SANDBOX
@@ -1095,34 +1247,33 @@ with col_charts:
             help="Simulates prompt fluid resuscitation and source control before acute shock sets in."
         )
         
+        # Counterfactual projection curves
+        sim_hours = list(range(1, 25))
+        actual_risk = df_patient_full["risk_score"].tolist()
+        
+        projected_risk = []
+        for h in sim_hours:
+            if h <= 14:
+                projected_risk.append(actual_risk[h - 1])
+            else:
+                # Fluid resuscitation effect: risk score rapidly recovers to ~22% by T+18
+                decay_k = h - 14
+                recovered_val = max(18.0, actual_risk[13] * np.exp(-0.35 * decay_k) + np.random.normal(0, 1.2))
+                projected_risk.append(round(recovered_val, 1))
+                
+        fig_counter = go.Figure()
+        
+        # Unmitigated natural course
+        fig_counter.add_trace(go.Scatter(
+            x=sim_hours,
+            y=actual_risk,
+            name="Natural Progression (Unmitigated)",
+            line=dict(color="#ef4444", width=3, dash="dot" if sim_intervention else "solid"),
+            mode="lines"
+        ))
+        
         if sim_intervention:
             st.success("✅ **Intervention Mode Active:** Modeling rapid hemodynamic recovery and lactate clearance.")
-            
-            # Counterfactual projection curves
-            sim_hours = list(range(1, 25))
-            actual_risk = df_patient_full["risk_score"].tolist()
-            
-            projected_risk = []
-            for h in sim_hours:
-                if h <= 14:
-                    projected_risk.append(actual_risk[h - 1])
-                else:
-                    # Fluid resuscitation effect: risk score rapidly recovers to ~22% by T+18
-                    decay_k = h - 14
-                    recovered_val = max(18.0, actual_risk[13] * np.exp(-0.35 * decay_k) + np.random.normal(0, 1.2))
-                    projected_risk.append(round(recovered_val, 1))
-                    
-            fig_counter = go.Figure()
-            
-            # Unmitigated natural course
-            fig_counter.add_trace(go.Scatter(
-                x=sim_hours,
-                y=actual_risk,
-                name="Natural Progression (Without WardWatch Early Action)",
-                line=dict(color="#ef4444", width=3, dash="dot"),
-                mode="lines"
-            ))
-            
             # Counterfactual recovered course
             fig_counter.add_trace(go.Scatter(
                 x=sim_hours,
@@ -1140,29 +1291,31 @@ with col_charts:
                 annotation_position="top left",
                 annotation_font_color="#38bdf8"
             )
-            
-            fig_counter.update_layout(
-                title="<b>Clinical Risk Trajectory: Natural Deterioration vs Early Resuscitation</b>",
-                title_font_size=13,
-                paper_bgcolor="#ffffff",
-                plot_bgcolor="#f8fafc",
-                font=dict(color="#334155", size=11),
-                xaxis=dict(title="Simulation Timeline (Hours)", gridcolor="rgba(0,0,0,0.07)", range=[1, 24]),
-                yaxis=dict(title="Composite Sepsis Risk (%)", gridcolor="rgba(0,0,0,0.07)", range=[0, 105]),
-                legend=dict(orientation="h", yanchor="top", y=-0.20, xanchor="center", x=0.5, font=dict(size=10)),
-                margin=dict(l=45, r=45, t=35, b=65),
-                height=340
-            )
-            st.plotly_chart(fig_counter, use_container_width=True)
-            
+        else:
+            st.info("ℹ️ **Standard Course Visualized:** Toggle above to simulate rapid fluid challenge and source control.")
+        
+        fig_counter.update_layout(
+            title="<b>Clinical Risk Trajectory: Natural Deterioration vs Early Resuscitation</b>",
+            title_font_size=13,
+            autosize=True,
+            paper_bgcolor="#ffffff",
+            plot_bgcolor="#f8fafc",
+            font=dict(color="#334155", size=11),
+            xaxis=dict(title="Simulation Timeline (Hours)", gridcolor="rgba(0,0,0,0.07)", range=[1, 24]),
+            yaxis=dict(title="Composite Sepsis Risk (%)", gridcolor="rgba(0,0,0,0.07)", range=[0, 105]),
+            legend=dict(orientation="h", yanchor="top", y=-0.20, xanchor="center", x=0.5, font=dict(size=10)),
+            margin=dict(l=45, r=45, t=35, b=65),
+            height=340
+        )
+        render_plotly(fig_counter)
+        
+        if sim_intervention:
             st.markdown("""
             <div style='background: rgba(16, 185, 129, 0.12); border: 1px solid #10b981; border-radius: 8px; padding: 12px 16px; font-size: 0.85rem;'>
                 <b>Outcome Analysis:</b> Initiating early fluid challenge and lactate monitoring at <b>T+14:00</b> averts acute hypotension at T+20:00.
                 Estimated ICU transfer avoidance probability: <b>89.4%</b> &bull; Projected hospital stay reduction: <b>2.8 days</b>.
             </div>
             """, unsafe_allow_html=True)
-        else:
-            st.info("Toggle the counterfactual simulation switch above to visualize the clinical payoff of early intervention.")
 
     # --------------------------------------------------------------------------
     # TAB 3: SBAR CLINICAL HANDOVER GENERATOR
@@ -1279,7 +1432,7 @@ with col_ai:
         margin=dict(l=25, r=25, t=20, b=15),
         height=220
     )
-    st.plotly_chart(fig_gauge, use_container_width=True)
+    render_plotly(fig_gauge)
     
     # Demonstration Highlight Banner for Bed 4 (Silent Sepsis Case)
     if active_bed_id == 4:
@@ -1349,6 +1502,7 @@ with col_ai:
         fig_xai.update_layout(
             title="<b>Multivariate Weight Distribution</b>",
             title_font_size=12,
+            autosize=True,
             paper_bgcolor="#ffffff",
             plot_bgcolor="#f8fafc",
             font=dict(color="#334155", size=10),
@@ -1357,9 +1511,34 @@ with col_ai:
             margin=dict(l=145, r=20, t=35, b=25),
             height=max(180, len(xai_labels) * 32 + 50)
         )
-        st.plotly_chart(fig_xai, use_container_width=True)
+        render_plotly(fig_xai)
     else:
-        st.info("🟢 No abnormal risk drivers identified. Patient vitals within expected normal physiological bounds.")
+        st.info("🟢 No acute risk drivers identified. Patient vitals within normal baseline limits.")
+        # Baseline Stability Distribution Chart
+        fig_xai = go.Figure(go.Bar(
+            x=[98, 96, 95],
+            y=["Arterial Perfusion", "Oxygen Delivery", "Microvascular Flow"],
+            orientation="h",
+            marker=dict(
+                color=["#10b981", "#10b981", "#10b981"],
+                line=dict(color="rgba(0,0,0,0.1)", width=1)
+            ),
+            text=["98% Optimal", "96% Optimal", "95% Optimal"],
+            textposition="auto"
+        ))
+        fig_xai.update_layout(
+            title="<b>Physiological Stability Parameters</b>",
+            title_font_size=12,
+            autosize=True,
+            paper_bgcolor="#ffffff",
+            plot_bgcolor="#f8fafc",
+            font=dict(color="#334155", size=10),
+            xaxis=dict(title="Stability Index (%)", gridcolor="rgba(0,0,0,0.07)", range=[0, 105]),
+            yaxis=dict(autorange="reversed"),
+            margin=dict(l=145, r=20, t=35, b=25),
+            height=180
+        )
+        render_plotly(fig_xai)
 
     st.markdown("---")
 
