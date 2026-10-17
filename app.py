@@ -5,6 +5,11 @@ import plotly.graph_objects as go
 import plotly.express as px
 import time
 import os
+import warnings
+
+# Filter deprecation warnings for clean production logs
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # Supabase Client Import (Optional / Graceful)
 try:
