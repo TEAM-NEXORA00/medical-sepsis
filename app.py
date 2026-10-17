@@ -1735,3 +1735,40 @@ st.markdown("""
     WardWatch AI &bull; Clinically Calibrated Against Non-ICU Occult Decompensation Criteria &bull; Shock Index Normal Range: 0.5–0.7; Elevated: &gt;0.90 &bull; qSOFA Threshold: ≥2 points indicating increased mortality risk.
 </div>
 """, unsafe_allow_html=True)
+
+
+# ==============================================================================
+# VERCEL DEPLOYMENT ENTRYPOINT (WSGI / HTTP Serverless Handler)
+# ==============================================================================
+from http.server import BaseHTTPRequestHandler
+
+def get_vercel_portal_html():
+    try:
+        from wardwatch_portal import get_portal_html
+        return get_portal_html()
+    except Exception as e:
+        return f"<!DOCTYPE html><html><body><h1>WardWatch AI Telemetry Engine Active</h1><p>{e}</p></body></html>"
+
+def app(environ, start_response):
+    """WSGI Application entrypoint for Vercel Serverless Function deployments."""
+    status = '200 OK'
+    response_headers = [
+        ('Content-Type', 'text/html; charset=utf-8'),
+        ('Cache-Control', 'public, max-age=0, must-revalidate')
+    ]
+    start_response(status, response_headers)
+    return [get_vercel_portal_html().encode('utf-8')]
+
+# WSGI Standard Alias
+application = app
+
+class handler(BaseHTTPRequestHandler):
+    """BaseHTTPRequestHandler entrypoint for Vercel Serverless Function deployments."""
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Cache-Control', 'public, max-age=0, must-revalidate')
+        self.end_headers()
+        html = get_vercel_portal_html()
+        self.wfile.write(html.encode('utf-8'))
+
