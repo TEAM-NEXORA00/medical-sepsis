@@ -687,18 +687,26 @@ with st.sidebar:
 # ==============================================================================
 st.markdown(f"""
 <div class="top-header">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <div>
-            <h1>🛡️ WardWatch AI <span style="font-size: 1.15rem; color: #38bdf8; font-weight: 500;">| Silent Deterioration & Early Warning Engine</span></h1>
-            <p>Non-ICU continuous telemetry surveillance &bull; Identifying sub-clinical deterioration & sepsis 3-6 hours BEFORE acute failure.</p>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+        <div style="flex: 1; min-width: 280px;">
+            <h1 style="font-size: 1.6rem; font-weight: 700; margin: 0; color: #0f172a; line-height: 1.3;">
+                🛡️ WardWatch AI <span style="font-size: 1.05rem; color: #0284c7; font-weight: 500; display: inline-block;">| Silent Deterioration & Early Warning Engine</span>
+            </h1>
+            <p style="margin: 4px 0 0 0; color: #475569; font-size: 0.88rem; line-height: 1.4;">
+                Non-ICU continuous telemetry surveillance &bull; Identifying sub-clinical deterioration & sepsis 3-6 hours BEFORE acute failure.
+            </p>
         </div>
-        <div style="text-align: right; margin-top: 6px;">
-            <span class="badge badge-purple">🔒 Cloud EHR Synced</span>
-            <span class="badge badge-blue" style="margin-left: 6px;">Unit: 4-East Med-Surg</span>
-            <span class="badge badge-{'red' if high_risk_count > 0 else 'green'}" style="margin-left: 6px;">
-                {'⚠️ ' + str(high_risk_count) + ' High-Risk Alert' if high_risk_count > 0 else '🟢 All Beds Monitored'}
-            </span>
-            <div style="color: #94a3b8; font-size: 0.82rem; margin-top: 4px;">Simulation Live Clock: <b>T+{st.session_state.sim_hour:02d}:00</b></div>
+        <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+                <span class="badge badge-purple">🔒 Cloud EHR Synced</span>
+                <span class="badge badge-blue">Unit: 4-East Med-Surg</span>
+                <span class="badge badge-{'red' if high_risk_count > 0 else 'green'}">
+                    {'⚠️ ' + str(high_risk_count) + ' High-Risk Alert' if high_risk_count > 0 else '🟢 All Beds Monitored'}
+                </span>
+            </div>
+            <div style="color: #64748b; font-size: 0.82rem; margin-top: 2px;">
+                Simulation Live Clock: <b style="color: #0f172a;">T+{st.session_state.sim_hour:02d}:00</b>
+            </div>
         </div>
     </div>
 </div>
@@ -740,19 +748,19 @@ for i, bed_id in enumerate(range(1, 9)):
     with col:
         st.markdown(f"""
         <div class="bed-card {card_class} {selected_class}">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <span style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">{row_data['bed_str']}</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 4px;">
+                <span style="font-weight: 700; color: #0f172a; font-size: 0.95rem; white-space: nowrap;">{row_data['bed_str']}</span>
                 {tier_badge}
             </div>
-            <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;">{row_data['name']} ({row_data['age']}{row_data['sex']})</div>
-            <div style="font-size: 0.74rem; color: #64748b; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600; line-height: 1.3; margin-bottom: 3px;">{row_data['name']} ({row_data['age']}{row_data['sex']})</div>
+            <div style="font-size: 0.74rem; color: #64748b; margin-bottom: 8px; line-height: 1.3; min-height: 30px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
                 {row_data['dx']}
             </div>
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
                 <span style="font-size: 0.78rem; color: #64748b;">Risk Score:</span>
                 <span style="font-size: 1.3rem; font-weight: 800; color: {accent_color};">{risk:.0f}%</span>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.75rem; background: rgba(255,255,255,0.75); border: 1px solid rgba(0,0,0,0.06); padding: 6px 8px; border-radius: 6px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.75rem; background: rgba(255,255,255,0.85); border: 1px solid rgba(0,0,0,0.06); padding: 6px 8px; border-radius: 6px;">
                 <div>HR: <b class="tele-val" style="color: {'#dc2626' if row_data['hr'] > 100 else '#0f172a'};">{row_data['hr']:.0f}</b></div>
                 <div>BP: <b class="tele-val" style="color: #0f172a;">{row_data['sbp']:.0f}/{row_data['dbp']:.0f}</b></div>
                 <div>SpO2: <b class="tele-val" style="color: {'#dc2626' if row_data['spo2'] < 93 else '#0f172a'};">{row_data['spo2']:.0f}%</b></div>
@@ -783,21 +791,21 @@ curr_pt_row = df_patient_live.iloc[-1]
 # Patient Clinical Header
 st.markdown(f"""
 <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-left: 5px solid #0284c7; border-radius: 8px; padding: 14px 20px; margin-bottom: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <div>
-            <h3 style="margin: 0; color: #0f172a; font-size: 1.3rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div style="flex: 1; min-width: 260px;">
+            <h3 style="margin: 0; color: #0f172a; font-size: 1.25rem; line-height: 1.3;">
                 📋 Patient Deep-Dive: <span style="color: #0284c7;">{active_meta['bed_str']} &bull; {active_meta['name']}</span>
-                <span style="font-size: 0.88rem; color: #64748b; font-weight: normal; margin-left: 10px;">MRN: {active_meta['patient_id']}</span>
+                <span style="font-size: 0.85rem; color: #64748b; font-weight: normal; margin-left: 8px; white-space: nowrap;">MRN: {active_meta['patient_id']}</span>
             </h3>
-            <div style="font-size: 0.85rem; color: #334155; margin-top: 4px;">
+            <div style="font-size: 0.85rem; color: #334155; margin-top: 6px; line-height: 1.4;">
                 <b>Age/Sex:</b> {active_meta['age']} {active_meta['sex']} &bull; 
                 <b>Diagnosis:</b> {active_meta['dx']} &bull; 
                 <b>Attending:</b> {active_meta['md']} &bull; 
                 <b>Room:</b> {active_meta['room']} (Med-Surg Ward 4-East)
             </div>
         </div>
-        <div style="text-align: right;">
-            <span class="badge badge-{'red' if curr_pt_row['risk_score'] > 65 else ('amber' if curr_pt_row['risk_score'] >= 30 else 'green')}" style="font-size: 0.95rem; padding: 6px 14px;">
+        <div>
+            <span class="badge badge-{'red' if curr_pt_row['risk_score'] > 65 else ('amber' if curr_pt_row['risk_score'] >= 30 else 'green')}" style="font-size: 0.95rem; padding: 6px 14px; white-space: nowrap;">
                 {curr_pt_row['risk_tier']} ({curr_pt_row['risk_score']:.0f}%)
             </span>
         </div>
@@ -911,14 +919,14 @@ with col_charts:
             ),
             legend=dict(
                 orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1,
+                yanchor="top",
+                y=-0.22,
+                xanchor="center",
+                x=0.5,
                 font=dict(size=10)
             ),
-            margin=dict(l=45, r=45, t=40, b=35),
-            height=255
+            margin=dict(l=45, r=45, t=35, b=55),
+            height=275
         )
         st.plotly_chart(fig_hemo, use_container_width=True)
 
@@ -989,14 +997,14 @@ with col_charts:
             ),
             legend=dict(
                 orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1,
+                yanchor="top",
+                y=-0.22,
+                xanchor="center",
+                x=0.5,
                 font=dict(size=10)
             ),
-            margin=dict(l=45, r=45, t=40, b=35),
-            height=245
+            margin=dict(l=45, r=45, t=35, b=55),
+            height=265
         )
         st.plotly_chart(fig_resp, use_container_width=True)
 
@@ -1058,14 +1066,14 @@ with col_charts:
             ),
             legend=dict(
                 orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1,
+                yanchor="top",
+                y=-0.22,
+                xanchor="center",
+                x=0.5,
                 font=dict(size=10)
             ),
-            margin=dict(l=45, r=45, t=40, b=35),
-            height=245
+            margin=dict(l=45, r=45, t=35, b=55),
+            height=265
         )
         st.plotly_chart(fig_labs, use_container_width=True)
 
@@ -1136,9 +1144,9 @@ with col_charts:
                 font=dict(color="#334155", size=11),
                 xaxis=dict(title="Simulation Timeline (Hours)", gridcolor="rgba(0,0,0,0.07)", range=[1, 24]),
                 yaxis=dict(title="Composite Sepsis Risk (%)", gridcolor="rgba(0,0,0,0.07)", range=[0, 105]),
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=10)),
-                margin=dict(l=45, r=45, t=40, b=35),
-                height=320
+                legend=dict(orientation="h", yanchor="top", y=-0.20, xanchor="center", x=0.5, font=dict(size=10)),
+                margin=dict(l=45, r=45, t=35, b=65),
+                height=340
             )
             st.plotly_chart(fig_counter, use_container_width=True)
             
@@ -1229,7 +1237,7 @@ with col_ai:
     fig_gauge = go.Figure(go.Indicator(
         mode="gauge+number+delta",
         value=current_risk,
-        number={"suffix": "%", "font": {"size": 38, "color": "#0f172a"}},
+        number={"suffix": "%", "font": {"size": 32, "color": "#0f172a"}},
         delta={
             "reference": ref_risk,
             "increasing": {"color": "#dc2626"},
@@ -1259,8 +1267,8 @@ with col_ai:
         paper_bgcolor="#ffffff",
         plot_bgcolor="#ffffff",
         font=dict(color="#0f172a"),
-        margin=dict(l=20, r=20, t=30, b=10),
-        height=190
+        margin=dict(l=25, r=25, t=20, b=15),
+        height=220
     )
     st.plotly_chart(fig_gauge, use_container_width=True)
     
@@ -1305,15 +1313,15 @@ with col_ai:
             driver_class = "critical" if points > 14 else "warning"
             st.markdown(f"""
             <div class="xai-card {driver_class}">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: 600; font-size: 0.86rem; color: #0f172a;">{factor_name}</span>
-                    <span style="font-weight: 700; font-size: 0.86rem; color: {'#dc2626' if points > 14 else '#d97706'};">+{points}% contribution</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+                    <span style="font-weight: 600; font-size: 0.85rem; color: #0f172a; flex: 1; min-width: 140px;">{factor_name}</span>
+                    <span style="font-weight: 700; font-size: 0.85rem; color: {'#dc2626' if points > 14 else '#d97706'}; white-space: nowrap;">+{points}% contribution</span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
         # Feature Attribution Bar Chart
-        xai_labels = [k for k, v in sorted_xai]
+        xai_labels = [k[:22] + "..." if len(k) > 22 else k for k, v in sorted_xai]
         xai_values = [v for k, v in sorted_xai]
         
         fig_xai = go.Figure(go.Bar(
@@ -1325,7 +1333,7 @@ with col_ai:
                 colorscale=[[0, "#38bdf8"], [0.45, "#f59e0b"], [1.0, "#ef4444"]],
                 line=dict(color="rgba(0,0,0,0.1)", width=1)
             ),
-            text=[f"+{v}%" for v in xai_values],
+            text=[f"+{v:.0f}%" for v in xai_values],
             textposition="auto"
         ))
         
@@ -1337,8 +1345,8 @@ with col_ai:
             font=dict(color="#334155", size=10),
             xaxis=dict(title="Calculated Risk Impact (%)", gridcolor="rgba(0,0,0,0.07)", range=[0, 35]),
             yaxis=dict(autorange="reversed"),
-            margin=dict(l=10, r=10, t=30, b=30),
-            height=170
+            margin=dict(l=145, r=20, t=35, b=25),
+            height=max(180, len(xai_labels) * 32 + 50)
         )
         st.plotly_chart(fig_xai, use_container_width=True)
     else:
